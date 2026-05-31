@@ -2,174 +2,162 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
+> ⚠️ **Status:** This repo ships source code only — no packaged installer yet. Running it requires Rust, Xcode Command Line Tools, and Node.js. If you're not comfortable with a command-line setup, watch for the upcoming packaged app in [Releases](../../releases).
+
 AI Monitor is an open-source, local-first monitor for AI work.
 
-It collects task state from tools such as Claude Code, Codex CLI, Cursor, browser-based AI apps, IDE extensions, GitHub coding-agent pages, and terminal jobs, then shows what is running, completed, failed, or waiting for input in one local macOS floating panel.
+**Example:** When you have Claude Code, Cursor, and several ChatGPT tabs all running at once, AI Monitor shows you at a glance which ones finished, which ones failed, and which are waiting for you to click "approve" — all in one floating panel on your Mac.
+
+It collects task state from Claude Code, Codex CLI, Cursor, browser-based AI apps, IDE extensions, GitHub coding-agent pages, and terminal jobs, then shows what is running, completed, failed, or waiting for input in one local macOS floating panel.
 
 ## Current Status
 
-This repository is the source release. There is no packaged installer published from this repo yet.
+Source-only release. No packaged installer is published from this repo yet.
 
-The current desktop app target is macOS. Windows and Linux desktop apps are not implemented yet.
+The current desktop target is macOS. Windows and Linux desktop apps are not implemented yet.
 
 ## Requirements
 
-- macOS 13.0 or later for the desktop panel.
-- Rust toolchain for the daemon and core crates.
-- Xcode Command Line Tools for Swift-based macOS UI development.
-- Node.js for terminal and agent hook integrations.
-- Chrome or another Chromium browser for the current browser extension workflow.
+- macOS 13.0 or later
+- [Rust toolchain](https://rustup.rs) — for the daemon
+- Xcode Command Line Tools — for the floating panel (`xcode-select --install`)
+- Node.js — for terminal and agent hook integrations
 
 ## Preview
 
 ![AI Monitor floating panel preview](docs/images/floating-monitor.png)
 
-![AI Monitor clickable notification preview](docs/images/notification.png)
+![AI Monitor notification preview](docs/images/notification.png)
 
-## Quick Start From Source
+## Quick Start
 
-Clone the repository:
+### Step 1 — Install prerequisites
+
+Install Rust if you don't have it:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+Install Xcode Command Line Tools if you don't have them:
+
+```bash
+xcode-select --install
+```
+
+### Step 2 — Clone the repo
 
 ```bash
 git clone https://github.com/notracc1210/ai-monitor-public.git
 cd ai-monitor-public
 ```
 
-Start the local daemon:
+### Step 3 — Start the daemon
 
 ```bash
 cargo run -p ai-monitor-daemon -- --bind 127.0.0.1:4318 --database ./ai-monitor.db --config ./config/default.toml
 ```
 
-In another terminal, open the macOS floating monitor:
+The daemon is the background service that receives task events from all your AI tools. **Keep this terminal window open the entire time you use AI Monitor.** Closing it stops all monitoring.
+
+The first time you run this, Cargo downloads and compiles dependencies — it can take a few minutes.
+
+### Step 4 — Open the floating panel
+
+Open a **new terminal window** (leave the daemon window from Step 3 running), then:
 
 ```bash
 ./scripts/run_macos_floating_window.sh
 ```
 
-The daemon creates a local API token at:
+This compiles and launches the macOS floating monitor. It requires Xcode Command Line Tools.
 
-```txt
-~/.ai-monitor/api-token
-```
-
-Use that token when a browser extension or editor integration asks for one.
-
-## Build A Local App Bundle
-
-For local macOS development, you can build an app bundle:
+### Step 5 — Get your API token
 
 ```bash
-./scripts/build_macos_app.sh
-open "target/macos-app/AI Monitor.app"
+cat ~/.ai-monitor/api-token
 ```
 
-This is a local development build. It is useful for testing the menu bar app, settings window, bundled daemon behavior, and click-to-return actions.
+The daemon creates this file automatically on first run. You'll paste this token into the browser extension and IDE extension when setting them up below.
 
 ## Integrations
 
-AI Monitor is built around small adapters that report task state to the local daemon.
+Set up the adapters for the tools you use. Each adapter reports task state to the daemon.
 
-| Surface | Current support |
+| Surface | What's supported |
 | --- | --- |
-| Browser | Chrome extension for ChatGPT, Claude, Gemini, Perplexity, Grok, and GitHub coding-agent pages. |
-| IDE | VS Code and Cursor extension. JetBrains integration exists in source form. |
-| Terminal | Shell commands, Claude Code hooks, Codex CLI hooks, compact terminal events, and Superset terminal hooks. |
-| Desktop app observer | Optional macOS Accessibility-based observer for local desktop app state. Disabled by default. |
+| Browser | Chrome extension for ChatGPT, Claude, Gemini, Perplexity, Grok, and GitHub coding-agent pages |
+| IDE | VS Code and Cursor extension; JetBrains plugin (source only) |
+| Terminal | Claude Code hooks, Codex CLI hooks, shell command wrapper |
+| Desktop app observer | Optional macOS Accessibility observer (disabled by default) |
 
-### Browser Extension
+### Browser Extension (Chrome)
 
-Load the extension from source:
+1. Open `chrome://extensions` in Chrome
+2. Enable **Developer Mode** (toggle in the top-right corner)
+3. Click **Load unpacked** and select the folder: `integrations/browser-extension/chrome`
 
-```txt
-chrome://extensions -> Developer Mode -> Load unpacked -> integrations/browser-extension/chrome
-```
+Then open the extension popup:
+- Set **Daemon URL** to `http://127.0.0.1:4318`
+- Paste your API token (from `cat ~/.ai-monitor/api-token`)
+- Click **Test** — it should confirm the daemon is online
 
-Open the extension popup, set the daemon URL to `http://127.0.0.1:4318`, paste the local API token, and click `Test`.
+After installing, reload any open ChatGPT, Claude, Gemini, Perplexity, Grok, or GitHub coding-agent tabs.
 
-### VS Code Or Cursor
+### VS Code or Cursor
 
-Install the source extension from the editor command palette:
+1. Open the Command Palette (`Cmd+Shift+P`)
+2. Run **Developer: Install Extension from Location...**
+3. Select the folder: `integrations/ide/vscode`
+4. Run **AI Monitor: Send Test Event** to confirm it's working
 
-```txt
-Developer: Install Extension from Location...
-```
+For Cursor: after installing, set `AI Monitor: Source` to `cursor` in VS Code settings.
 
-Select:
+### Terminal and Agent Hooks (Claude Code, Codex CLI)
 
-```txt
-integrations/ide/vscode
-```
-
-Then run:
-
-```txt
-AI Monitor: Send Test Event
-```
-
-### Terminal And Agent Hooks
-
-Install project-local hooks:
+Install project-local hooks for a specific repo:
 
 ```bash
-./integrations/terminal/install-terminal-integrations.command --project /path/to/repo
+./integrations/terminal/install-terminal-integrations.command --project /path/to/your/repo
 ```
 
-Codex CLI requires `/hooks` trust review before non-managed command hooks run.
+This requires Node.js. If Node.js is not installed, the script will say so and exit without making changes.
 
-You can also wrap a command manually:
+For Codex CLI: after the installer runs, open `/hooks` inside Codex CLI and trust the AI Monitor hooks.
+
+**Wrap any command manually:**
 
 ```bash
 node integrations/terminal/ai-monitor-terminal.js run \
   --source terminal \
-  --session-name "Daemon tests" \
-  --title "Run daemon tests" \
-  -- cargo test
+  --session-name "My session" \
+  --title "My task description" \
+  -- your-command-here
 ```
 
 ## Notifications
 
-Local desktop notifications are the default. Third-party notification providers are optional and are only used after you configure them.
+Local desktop notifications are on by default. Third-party providers (Slack, Telegram, Discord, ntfy, Pushover, and more) are optional. See [docs/third-party-notifications.md](docs/third-party-notifications.md) to configure them.
 
-Supported provider code exists for desktop, Slack, Telegram, Discord, Email, ntfy, Pushover, Bark, Feishu, WeCom, DingTalk, ServerChan, and custom webhooks.
+## Privacy and Local Data
 
-## Privacy And Local Data
+AI Monitor is local-first. The daemon binds to `127.0.0.1`, all data stays on your Mac, and every client uses the same local API token.
 
-AI Monitor is local-first. The daemon binds to `127.0.0.1` by default, stores state on your Mac, and requires a local API token.
+When running from source, the active config file is `./config/default.toml` (the one you passed to `--config`). Edit it to configure notifications, privacy rules, and quiet hours, then restart the daemon.
 
-User data is stored outside the source repo:
+| What | Where |
+| --- | --- |
+| Config (source run) | `./config/default.toml` in the repo |
+| Database | `./ai-monitor.db` in the repo (from the `--database` flag) |
+| API token | `~/.ai-monitor/api-token` |
+| Logs | daemon terminal window output |
 
-- Config: `~/Library/Application Support/AI Monitor/config/default.toml`
-- Database: `~/Library/Application Support/AI Monitor/ai-monitor.db`
-- API token: `~/.ai-monitor/api-token`
-- Logs: `~/Library/Logs/AI Monitor`
+See [docs/privacy.md](docs/privacy.md) for what gets stored and how to exclude specific workspaces.
 
-The API token file is created with `0600` permissions. Browser, terminal, Swift, and editor clients use the same local token.
+## Docs
 
-See [docs/privacy.md](docs/privacy.md) and [docs/security.md](docs/security.md) for more detail.
-
-## Development Checks
-
-Run focused checks:
-
-```bash
-./scripts/test_terminal_integration.sh
-./scripts/test_official_cli_hooks.sh
-./scripts/test_browser_detectors.sh
-./scripts/test_ide_integrations.sh
-```
-
-Run Rust tests:
-
-```bash
-cargo test --workspace
-```
-
-## Project Docs
-
-- [Architecture](docs/architecture.md)
-- [Integrations](docs/integrations.md)
-- [Protocol and API](docs/protocol.md)
-- [Notification system](docs/notification-system.md)
-- [Troubleshooting](docs/troubleshooting.md)
-- [Uninstall guide](docs/uninstall.md)
+**For users:**
+- [Troubleshooting](docs/troubleshooting.md) — daemon offline, token errors, integrations not working
+- [Uninstall](docs/uninstall.md) — remove the daemon and all local data
+- [Privacy](docs/privacy.md) — what's stored, what's not sent out, how to ignore a workspace
+- [Third-party notifications](docs/third-party-notifications.md) — Slack, Telegram, Discord, and more

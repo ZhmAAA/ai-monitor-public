@@ -1,14 +1,14 @@
 # Third-Party Notifications
 
-AI Monitor does not require an official mobile app for the current release scope. It reaches phones and teams through provider integrations.
+By default, AI Monitor only sends local desktop notifications. You can optionally configure third-party providers to receive notifications on your phone or in a team channel.
 
-## Supported providers
+## Supported Providers
 
-- Desktop
+- Desktop (default, always on)
 - Telegram
 - Slack
 - Discord
-- Email
+- Email (via local `sendmail`)
 - ntfy
 - Pushover
 - Bark
@@ -18,60 +18,93 @@ AI Monitor does not require an official mobile app for the current release scope
 - ServerChan
 - Custom Webhook
 
-Email currently uses a configured local `sendmail_path`. The other non-desktop providers are HTTP integrations and use the daemon's shared delivery log, health check, and retry APIs.
+## Setup
 
-## Configuration
+Add provider configuration to `config/default.toml`, then restart the daemon. The config file is the one you passed with `--config` when starting the daemon.
 
-Providers are configured in TOML and can reference environment variables:
+**Telegram:**
 
 ```toml
 [[providers]]
 id = "telegram"
 type = "telegram"
 enabled = true
-bot_token = "${TELEGRAM_BOT_TOKEN}"
-chat_id = "${TELEGRAM_CHAT_ID}"
+bot_token = "YOUR_BOT_TOKEN"
+chat_id = "YOUR_CHAT_ID"
 ```
 
-Sensitive fields such as `bot_token`, `webhook_url`, `token`, `send_key`, `topic`, `device_key`, and custom webhook `url` can reference macOS Keychain items:
+**Slack:**
 
 ```toml
 [[providers]]
 id = "slack"
 type = "slack"
 enabled = true
-webhook_url = "keychain://ai-monitor/slack-webhook-url"
+webhook_url = "YOUR_INCOMING_WEBHOOK_URL"
 ```
 
-This is equivalent to `${KEYCHAIN:ai-monitor:slack-webhook-url}`. The daemon resolves the item with the macOS `security` tool at provider initialization. The macOS settings panel can create these Keychain items and update the provider config field to the generated `keychain://...` reference.
-
-Common HTTP provider examples:
+**Discord:**
 
 ```toml
 [[providers]]
 id = "discord"
 type = "discord"
 enabled = true
-webhook_url = "${DISCORD_WEBHOOK_URL}"
+webhook_url = "YOUR_DISCORD_WEBHOOK_URL"
+```
 
+**ntfy:**
+
+```toml
 [[providers]]
 id = "ntfy"
 type = "ntfy"
 enabled = true
-topic_url = "${NTFY_TOPIC_URL}"
+topic_url = "https://ntfy.sh/your-topic"
+```
 
+**Pushover:**
+
+```toml
+[[providers]]
+id = "pushover"
+type = "pushover"
+enabled = true
+user_key = "YOUR_USER_KEY"
+api_token = "YOUR_APP_API_TOKEN"
+```
+
+**Bark (iOS):**
+
+```toml
+[[providers]]
+id = "bark"
+type = "bark"
+enabled = true
+device_key = "YOUR_DEVICE_KEY"
+```
+
+**ServerChan:**
+
+```toml
 [[providers]]
 id = "server_chan"
 type = "server_chan"
 enabled = true
-send_key = "${SERVERCHAN_SEND_KEY}"
+send_key = "YOUR_SEND_KEY"
 ```
 
-Secrets should come from OS secure storage in production. Environment variables are acceptable for local development and CI smoke tests.
+**Custom Webhook:**
 
-## Webhook payload
+```toml
+[[providers]]
+id = "my-webhook"
+type = "webhook"
+enabled = true
+url = "https://your-endpoint.example.com/hook"
+```
 
-Custom webhooks receive:
+The webhook receives a JSON payload:
 
 ```json
 {
@@ -81,4 +114,33 @@ Custom webhooks receive:
 }
 ```
 
-Webhook consumers can route to internal systems, custom phone push gateways, or automation tools.
+## Notification Rules
+
+By default, all notifications go to the `desktop` provider only. To also send to a configured provider, edit the `[[rules]]` entries in `config/default.toml`.
+
+Example — also send completions to Telegram:
+
+```toml
+[[rules]]
+status = "completed"
+priority = "P1"
+send_to = ["desktop", "telegram"]
+```
+
+The default rules at the bottom of `config/default.toml` are a good starting point. Copy and modify them.
+
+After any config change, restart the daemon and watch the terminal output for errors confirming the provider loaded correctly.
+
+## Quiet Hours
+
+To suppress lower-priority notifications at night, edit `config/default.toml`:
+
+```toml
+[quiet_hours]
+enabled = true
+start = "22:00"
+end = "07:00"
+allow_priorities = ["P0"]
+```
+
+`P0` events (permission requests, failures, tasks waiting for input) still come through during quiet hours. Lower-priority events are suppressed.
