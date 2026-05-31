@@ -2,44 +2,73 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-AI Monitor lets you see all of your AI work in one local floating panel.
+AI Monitor is an open-source, local-first monitor for AI work.
 
-If you have several AI tools running at the same time, such as Claude Code, Codex CLI, Cursor, ChatGPT, Claude, Gemini, GitHub agents, browser tabs, and terminal jobs, AI Monitor shows what is running, what finished, what failed, and what needs your input. It can also notify you when a task needs attention.
+It collects task state from tools such as Claude Code, Codex CLI, Cursor, browser-based AI apps, IDE extensions, GitHub coding-agent pages, and terminal jobs, then shows what is running, completed, failed, or waiting for input in one local macOS floating panel.
+
+## Current Status
+
+This repository is the source release. There is no packaged installer published from this repo yet.
+
+The current desktop app target is macOS. Windows and Linux desktop apps are not implemented yet.
 
 ## Requirements
 
-- macOS 13.0 or later.
-- Apple Silicon and Intel Macs are supported by public release builds.
-- Windows and Linux desktop apps are not supported yet.
+- macOS 13.0 or later for the desktop panel.
+- Rust toolchain for the daemon and core crates.
+- Xcode Command Line Tools for Swift-based macOS UI development.
+- Node.js for terminal and agent hook integrations.
+- Chrome or another Chromium browser for the current browser extension workflow.
 
-## What It Looks Like
+## Preview
 
 ![AI Monitor floating panel preview](docs/images/floating-monitor.png)
 
 ![AI Monitor clickable notification preview](docs/images/notification.png)
 
-## What It Helps With
+## Quick Start From Source
 
-- Keep one small panel open instead of checking every AI tab, editor, and terminal window by hand.
-- Notice when an agent is done, stuck, failed, or waiting for permission.
-- Click a task row or notification to return to the browser tab, editor, terminal session, or workspace that produced it.
-- Send high-signal alerts to local desktop notifications, or optionally to services such as Slack, Telegram, Discord, Email, ntfy, Pushover, Bark, Feishu, WeCom, DingTalk, ServerChan, or a custom webhook.
+Clone the repository:
 
-## Quick Start
+```bash
+git clone https://github.com/notracc1210/ai-monitor-public.git
+cd ai-monitor-public
+```
 
-1. Download the public `AI Monitor.dmg`.
-2. Open the DMG and drag `AI Monitor.app` into `/Applications`.
-3. Open `AI Monitor.app` from `/Applications`.
-4. In Settings, click `Test connection`. If it says offline, click `Start daemon`, then test again.
-5. Use `Open browser install link`, then click `Copy API token`, paste it into the browser extension popup, and click `Test`.
+Start the local daemon:
 
-Settings opens automatically on first launch. You can reopen it later from the menu bar item.
+```bash
+cargo run -p ai-monitor-daemon -- --bind 127.0.0.1:4318 --database ./ai-monitor.db --config ./config/default.toml
+```
 
-The app starts its bundled local daemon automatically when the daemon is offline; `Start daemon` is the manual retry path if `Test connection` still reports offline. If you want integrations to keep working after you quit AI Monitor or after login, install the login daemon from Settings.
+In another terminal, open the macOS floating monitor:
 
-## Supported Inputs
+```bash
+./scripts/run_macos_floating_window.sh
+```
 
-AI Monitor is built around small adapters that report task state to the local app.
+The daemon creates a local API token at:
+
+```txt
+~/.ai-monitor/api-token
+```
+
+Use that token when a browser extension or editor integration asks for one.
+
+## Build A Local App Bundle
+
+For local macOS development, you can build an app bundle:
+
+```bash
+./scripts/build_macos_app.sh
+open "target/macos-app/AI Monitor.app"
+```
+
+This is a local development build. It is useful for testing the menu bar app, settings window, bundled daemon behavior, and click-to-return actions.
+
+## Integrations
+
+AI Monitor is built around small adapters that report task state to the local daemon.
 
 | Surface | Current support |
 | --- | --- |
@@ -48,11 +77,61 @@ AI Monitor is built around small adapters that report task state to the local ap
 | Terminal | Shell commands, Claude Code hooks, Codex CLI hooks, compact terminal events, and Superset terminal hooks. |
 | Desktop app observer | Optional macOS Accessibility-based observer for local desktop app state. Disabled by default. |
 
+### Browser Extension
+
+Load the extension from source:
+
+```txt
+chrome://extensions -> Developer Mode -> Load unpacked -> integrations/browser-extension/chrome
+```
+
+Open the extension popup, set the daemon URL to `http://127.0.0.1:4318`, paste the local API token, and click `Test`.
+
+### VS Code Or Cursor
+
+Install the source extension from the editor command palette:
+
+```txt
+Developer: Install Extension from Location...
+```
+
+Select:
+
+```txt
+integrations/ide/vscode
+```
+
+Then run:
+
+```txt
+AI Monitor: Send Test Event
+```
+
+### Terminal And Agent Hooks
+
+Install project-local hooks:
+
+```bash
+./integrations/terminal/install-terminal-integrations.command --project /path/to/repo
+```
+
+Codex CLI requires `/hooks` trust review before non-managed command hooks run.
+
+You can also wrap a command manually:
+
+```bash
+node integrations/terminal/ai-monitor-terminal.js run \
+  --source terminal \
+  --session-name "Daemon tests" \
+  --title "Run daemon tests" \
+  -- cargo test
+```
+
 ## Notifications
 
-Local desktop notifications are the default. Third-party notification providers are not configured on a new install, and provider secrets are only saved when you add them in Settings or in the config file.
+Local desktop notifications are the default. Third-party notification providers are optional and are only used after you configure them.
 
-macOS notification permission is requested only when AI Monitor first needs to show a local alert while local clickable notifications are enabled.
+Supported provider code exists for desktop, Slack, Telegram, Discord, Email, ntfy, Pushover, Bark, Feishu, WeCom, DingTalk, ServerChan, and custom webhooks.
 
 ## Privacy And Local Data
 
@@ -63,60 +142,15 @@ User data is stored outside the source repo:
 - Config: `~/Library/Application Support/AI Monitor/config/default.toml`
 - Database: `~/Library/Application Support/AI Monitor/ai-monitor.db`
 - API token: `~/.ai-monitor/api-token`
-- Login daemon: `~/Library/LaunchAgents/<bundle-id>.daemon.plist`
+- Logs: `~/Library/Logs/AI Monitor`
 
-The API token file is created with `0600` permissions. The browser extension uses the token you paste into its popup; terminal and Swift clients read the same token file automatically.
+The API token file is created with `0600` permissions. Browser, terminal, Swift, and editor clients use the same local token.
 
 See [docs/privacy.md](docs/privacy.md) and [docs/security.md](docs/security.md) for more detail.
 
-## Install Integrations
+## Development Checks
 
-### Browser Extension
-
-Public browser users install the Chrome Web Store or managed extension from the release install link. Set `AI_MONITOR_BROWSER_EXTENSION_INSTALL_URL` before a public build so Settings can open or copy that link and the release manifest records the same URL. Set `AI_MONITOR_BROWSER_EXTENSION_PRIVACY_POLICY_URL` to the public HTTPS privacy policy URL used in the browser extension listing.
-
-For internal testing from a source checkout:
-
-```txt
-chrome://extensions -> Developer Mode -> Load unpacked -> integrations/browser-extension/chrome
-```
-
-### VS Code Or Cursor
-
-Install the packaged VSIX with `Extensions: Install from VSIX...`, then run `AI Monitor: Send Test Event`.
-
-If delivery fails, run `AI Monitor: Open Desktop Settings`, click `Test connection`, and copy the API token if the extension reports an auth error.
-
-### Terminal And Agent Hooks
-
-For packaged releases, unzip `AI Monitor Terminal Integrations.zip` and double-click `Install AI Monitor Terminal Integrations.command`.
-
-From a source checkout, install project-local hooks with:
-
-```bash
-./integrations/terminal/install-terminal-integrations.command --project /path/to/repo
-```
-
-Codex CLI requires `/hooks` trust review before non-managed command hooks run.
-
-## Troubleshooting
-
-- If no tasks appear, open Settings and click `Test connection`.
-- If the browser extension reports HTTP 401, click `Copy API token` in Settings, paste it into the extension popup, save, and test again.
-- If terminal tasks do not appear, confirm Node.js is installed and reinstall the terminal integrations.
-- If clicking a task does not focus the right app, allow AI Monitor in macOS System Settings -> Privacy & Security -> Automation.
-
-See [docs/troubleshooting.md](docs/troubleshooting.md) for the full recovery guide.
-
-## For Developers
-
-Run the local daemon:
-
-```bash
-cargo run -p ai-monitor-daemon -- --bind 127.0.0.1:4318 --database ./ai-monitor.db --config ./config/default.toml
-```
-
-Run focused integration checks:
+Run focused checks:
 
 ```bash
 ./scripts/test_terminal_integration.sh
@@ -125,43 +159,17 @@ Run focused integration checks:
 ./scripts/test_ide_integrations.sh
 ```
 
-Build a local macOS app bundle:
+Run Rust tests:
 
 ```bash
-./scripts/build_macos_app.sh
-open "target/macos-app/AI Monitor.app"
+cargo test --workspace
 ```
 
-## Private Test Download
-
-For a quick internal test, you can package and stage the current app without Apple notarization:
-
-```bash
-./scripts/stage_private_test_release.sh
-```
-
-Send testers the files in `target/macos-public-release`. This path is only for people who expect a test build: macOS may warn that the app is from an unidentified developer, and browser extension links are not fully configured unless you provide `AI_MONITOR_BROWSER_EXTENSION_INSTALL_URL` and `AI_MONITOR_BROWSER_EXTENSION_PRIVACY_POLICY_URL`.
-
-## Public Release
-
-Prepare release environment values from the template, then run the public release script:
-
-```bash
-./scripts/init_macos_release_env.sh
-${EDITOR:-vi} .env.release.local
-set -a
-. ./.env.release.local
-set +a
-./scripts/release_macos_app.sh
-```
-
-Publish `target/macos-public-release/AI Monitor.dmg`, not raw files from `target/macos-dist`.
-
-Developer and maintainer references:
+## Project Docs
 
 - [Architecture](docs/architecture.md)
 - [Integrations](docs/integrations.md)
 - [Protocol and API](docs/protocol.md)
 - [Notification system](docs/notification-system.md)
-- [macOS release checklist](docs/release.md)
+- [Troubleshooting](docs/troubleshooting.md)
 - [Uninstall guide](docs/uninstall.md)
