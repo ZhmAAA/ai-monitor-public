@@ -157,7 +157,7 @@ AI Monitor 本地优先。daemon 绑定在 `127.0.0.1`，所有数据留在你�
 ## 文档
 
 **给使用者：**
-- [排障指南](docs/troubleshooting.md) — daemon 离线、token 错误、集成不工作
-- [卸载指南](docs/uninstall.md) — 移除 daemon 和本地数据
-- [隐私说明](docs/privacy.md) — 存了什么、默认不发送什么、怎么忽略某个工作区
-- [第三方通知](docs/third-party-notifications.md) — Slack、Telegram、Discord 等配置
+- [排障指南](docs/troubleshooting.zh-CN.md) — daemon 离线、token 错误、集成不工作
+- [卸载指南](docs/uninstall.zh-CN.md) — 移除 daemon 和本地数据
+- [隐私说明](docs/privacy.zh-CN.md) — 存了什么、默认不发送什么、怎么忽略某个工作区
+- [第三方通知](docs/third-party-notifications.zh-CN.md) — Slack、Telegram、Discord 等配置

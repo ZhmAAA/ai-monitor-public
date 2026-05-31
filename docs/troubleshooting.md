@@ -1,5 +1,7 @@
 # Troubleshooting
 
+[English](troubleshooting.md) | [简体中文](troubleshooting.zh-CN.md)
+
 This guide is for **source checkout users** who started the daemon with `cargo run`.
 
 ## Daemon Not Running

@@ -1,5 +1,7 @@
 # Uninstall
 
+[English](uninstall.md) | [简体中文](uninstall.zh-CN.md)
+
 ## Stop the Daemon
 
 If the daemon is running as a terminal process, close that terminal window.

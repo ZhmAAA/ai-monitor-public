@@ -1,5 +1,7 @@
 # AI Monitor Browser Adapter Privacy Policy
 
+[English](browser-extension-privacy-policy.md) | [简体中文](browser-extension-privacy-policy.zh-CN.md)
+
 Effective date: 2026-05-31
 
 This policy covers the AI Monitor Browser Adapter Chrome extension.

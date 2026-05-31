@@ -1,5 +1,7 @@
 # Privacy
 
+[English](privacy.md) | [简体中文](privacy.zh-CN.md)
+
 AI Monitor is local-first. It stores data on your Mac and does not send your prompts, replies, or workspace paths to external services by default.
 
 ## What Gets Stored Locally
