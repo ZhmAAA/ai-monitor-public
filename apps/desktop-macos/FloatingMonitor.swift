@@ -1709,13 +1709,13 @@ private func applicationIcon(bundleIdentifiers: [String], fallbackPaths: [String
 }
 
 private func menuBarLogoImage() -> NSImage? {
-    guard let url = Bundle.main.url(forResource: "AI-Monitor-MenuBar-Logo", withExtension: "png"),
+    guard let url = Bundle.main.url(forResource: "AI-Monitor-Logo", withExtension: "png"),
           let image = NSImage(contentsOf: url) else {
         return nil
     }
     let thickness = NSStatusBar.system.thickness
     image.size = NSSize(width: thickness, height: thickness)
-    image.isTemplate = true
+    image.isTemplate = false
     return image
 }
 
