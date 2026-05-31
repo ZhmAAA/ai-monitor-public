@@ -5197,7 +5197,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
     }
 
     private func configureStatusItem() {
-        let item = NSStatusBar.system.statusItem(withLength: NSVariableStatusItemLength)
+        let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = item.button {
             button.image = menuBarLogoImage() ??
                 NSImage(systemSymbolName: "dot.radiowaves.left.and.right", accessibilityDescription: "AI Monitor")
