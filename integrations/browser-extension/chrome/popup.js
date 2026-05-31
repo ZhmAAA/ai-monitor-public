@@ -87,7 +87,14 @@ async function clearToken() {
 async function openAIMonitorSettings() {
   setStatus("Opening", "If your browser asks, allow it to open AI Monitor Settings.");
   try {
-    await chrome.tabs.create({ url: "ai-monitor://settings", active: true });
+    // Update current tab instead of creating a new one to avoid a flash of
+    // "can't open page" before macOS routes the custom URL scheme to the app.
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id !== undefined) {
+      await chrome.tabs.update(tab.id, { url: "ai-monitor://settings" });
+    } else {
+      await chrome.tabs.create({ url: "ai-monitor://settings", active: true });
+    }
   } catch {
     setStatus("Open failed", "Open AI Monitor from Applications, then choose Settings from the menu bar.");
   }

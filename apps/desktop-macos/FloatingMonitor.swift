@@ -2666,17 +2666,21 @@ private func browserExtensionOpenURL(for target: URL, task: AgentTask, action: T
     var components = URLComponents()
     components.scheme = "chrome-extension"
     components.host = extensionId
-    components.path = "/open-tab.html"
-    var queryItems = [
-        URLQueryItem(name: "target", value: target.absoluteString),
-    ]
+    components.path = "/tab-focus.html"
+    // Use hash fragment instead of query string so ad blockers cannot match
+    // on "target=" or similar redirect-tracker patterns.
+    let allowed = CharacterSet.urlQueryAllowed
+    var parts: [String] = []
+    if let encoded = target.absoluteString.addingPercentEncoding(withAllowedCharacters: allowed) {
+        parts.append("u=\(encoded)")
+    }
     if let tabId {
-        queryItems.append(URLQueryItem(name: "tab_id", value: String(tabId)))
+        parts.append("tid=\(tabId)")
     }
     if let windowId {
-        queryItems.append(URLQueryItem(name: "window_id", value: String(windowId)))
+        parts.append("wid=\(windowId)")
     }
-    components.queryItems = queryItems
+    components.percentEncodedFragment = parts.joined(separator: "&")
     return components.url
 }
 

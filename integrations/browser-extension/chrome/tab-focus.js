@@ -1,7 +1,9 @@
-const params = new URLSearchParams(location.search);
-const tabId = numberParam("tab_id");
-const windowId = numberParam("window_id");
-const target = params.get("target") || "";
+// Params come from the hash fragment to avoid ad blocker pattern matching on query strings.
+// Format: #tid=<tabId>&wid=<windowId>&u=<encodedURL>
+const params = new URLSearchParams(location.hash.slice(1));
+const tabId = numberParam("tid");
+const windowId = numberParam("wid");
+const target = params.get("u") || "";
 
 activateOriginalTab().catch(() => {}).finally(closeHelperTab);
 
