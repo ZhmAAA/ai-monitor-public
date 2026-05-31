@@ -62,15 +62,18 @@ daemon 是接收所有 AI 工具任务事件的后台服务。**这个终端窗�
 
 第一次运行时，Cargo 需要下载并编译依赖，可能需要几分钟。
 
-### 第四步 — 打开悬浮面板
+### 第四步 — 构建并打开悬浮面板
 
 **新开一个终端窗口**（让第三步的 daemon 窗口继续运行），然后执行：
 
 ```bash
-./scripts/run_macos_floating_window.sh
+./scripts/build_macos_app.sh
+open "target/macos-app/AI Monitor.app"
 ```
 
-这会编译并启动 macOS 悬浮监控窗口，需要 Xcode Command Line Tools。
+构建步骤会把 FloatingMonitor.swift 编译成本地 app bundle，第一次需要约一分钟。需要 Xcode Command Line Tools。
+
+如果 macOS 提示"无法验证开发者"，右键点击 app → 打开 → 仍要打开。这是本地开发构建的预期行为。
 
 ### 第五步 — 获取 API token
 

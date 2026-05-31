@@ -62,15 +62,18 @@ The daemon is the background service that receives task events from all your AI 
 
 The first time you run this, Cargo downloads and compiles dependencies — it can take a few minutes.
 
-### Step 4 — Open the floating panel
+### Step 4 — Build and open the floating panel
 
 Open a **new terminal window** (leave the daemon window from Step 3 running), then:
 
 ```bash
-./scripts/run_macos_floating_window.sh
+./scripts/build_macos_app.sh
+open "target/macos-app/AI Monitor.app"
 ```
 
-This compiles and launches the macOS floating monitor. It requires Xcode Command Line Tools.
+The build step compiles FloatingMonitor.swift into a local app bundle. This takes a minute the first time. It requires Xcode Command Line Tools.
+
+If macOS says it can't verify the developer, right-click the app → Open → Open anyway. This is expected for a local development build.
 
 ### Step 5 — Get your API token
 
