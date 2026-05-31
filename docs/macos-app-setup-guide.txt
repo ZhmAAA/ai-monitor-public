@@ -1,0 +1,11 @@
+AI Monitor first-run setup (source build)
+Requires macOS 13.0 or later.
+
+1. AI Monitor starts the local daemon automatically when it is offline. Click Test connection in Settings; if it says offline, click Start daemon and test again.
+2. Click Copy API token in Settings to copy your local API token. You can also read it directly: cat ~/.ai-monitor/api-token
+3. Browser extension: open chrome://extensions, enable Developer Mode, click Load unpacked, and select the integrations/browser-extension/chrome folder in your repo. Paste the API token from step 2 into the extension popup and click Test.
+4. IDE extension: open VS Code or Cursor, run Developer: Install Extension from Location... from the command palette, and select integrations/ide/vscode in your repo. Run AI Monitor: Send Test Event to confirm. Cursor users should set AI Monitor: Source to cursor.
+5. Terminal hooks: run ./integrations/terminal/install-terminal-integrations.command --project /path/to/your/repo from the repo root. Requires Node.js. Codex CLI users must open /hooks and trust the AI Monitor hooks after installing.
+6. Click Install login daemon if you want the daemon to keep running after you quit the app or after login.
+7. Use Open logs and Open data folder in Settings to view daemon output and local data files.
+8. Use Copy diagnostics before asking for support. Diagnostics do not include the API token or provider secrets.
