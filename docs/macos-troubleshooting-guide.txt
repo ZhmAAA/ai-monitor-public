@@ -1,0 +1,43 @@
+AI Monitor troubleshooting guide (source build)
+
+Use this when AI Monitor opens but does not show tasks, or when an integration cannot connect.
+
+Daemon not running:
+- The daemon runs as a terminal process. Check that the terminal window where you ran cargo run is still open.
+- Restart the daemon from that terminal, or click Start daemon in Settings.
+- If port 4318 is already in use: lsof -i :4318, then kill the conflicting process and restart.
+- Check the daemon terminal window for error output.
+
+Token or HTTP 401 errors:
+1. Click Copy API token in Settings, or read it from the terminal: cat ~/.ai-monitor/api-token
+2. Paste the token into the browser extension popup or the VS Code AI Monitor: Api Token setting.
+3. The daemon creates ~/.ai-monitor/api-token automatically on first run with 0600 permissions.
+
+Browser extension does not report tabs:
+- Confirm the daemon terminal window is still open and running.
+- Open the extension popup and confirm the daemon URL is http://127.0.0.1:4318 and the API token is correct.
+- Reload the AI web page after installing or updating the extension.
+- Supported pages: ChatGPT, Claude, Gemini, Perplexity, Grok, and GitHub coding-agent pages.
+- The extension is loaded in Developer Mode from the source repo. Chrome will show an unverified-extension warning; that is expected.
+
+Terminal tasks do not appear:
+- Confirm Node.js is installed: node --version
+- Reinstall hooks: ./integrations/terminal/install-terminal-integrations.command --project /path/to/your/repo
+- Codex CLI users: open /hooks and trust the AI Monitor hooks.
+
+IDE tasks do not appear:
+- Run AI Monitor: Send Test Event from the VS Code command palette.
+- If it fails, confirm the daemon is running and the API token matches cat ~/.ai-monitor/api-token.
+- Cursor users: set AI Monitor: Source to cursor.
+
+Clicking a task does not focus the app:
+- The first time AI Monitor returns focus to a browser or terminal, macOS asks for permission. Choose Allow.
+- If you denied it: System Settings -> Privacy & Security -> Automation -> allow AI Monitor.
+
+Notifications do not appear:
+- Check System Settings -> Notifications and allow notifications from the app.
+- Third-party providers are disabled by default. Add provider config to config/default.toml and restart the daemon.
+
+Logs:
+- Source builds: watch the terminal window where you ran cargo run.
+- Login daemon builds: ~/Library/Logs/AI Monitor/daemon.out.log and daemon.err.log

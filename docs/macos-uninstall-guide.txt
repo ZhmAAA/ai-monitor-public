@@ -1,0 +1,26 @@
+AI Monitor uninstall guide (source build)
+
+Standard uninstall:
+1. Quit AI Monitor from the menu bar.
+2. Open AI Monitor Settings and click Remove login daemon if you enabled startup.
+3. Delete /Applications/AI Monitor.app if you moved the built app there, or delete the target/macos-app directory in your repo.
+
+Remove local data:
+Deleting the app does not automatically delete local history, config, tokens, or logs.
+Remove these paths only if you want a full cleanup:
+
+- ~/Library/Application Support/AI Monitor
+- ~/.ai-monitor
+- ~/Library/Logs/AI Monitor
+- ~/Library/Preferences/<bundle-id>.plist
+- ~/Library/LaunchAgents/<launch-agent-label>.plist
+
+You can also run the cleanup script from your source repo:
+
+  ./scripts/uninstall_macos_app.sh --dry-run   (preview only)
+  ./scripts/uninstall_macos_app.sh --yes        (remove everything)
+
+Remove integrations:
+- Browser extension: open chrome://extensions and remove AI Monitor Browser Adapter.
+- VS Code / Cursor extension: uninstall via the Extensions panel.
+- Terminal hooks: remove AI Monitor entries from .claude/settings.json or .codex/hooks.json in each project where you installed them.

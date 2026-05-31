@@ -1,0 +1,31 @@
+AI Monitor privacy notice (source build)
+
+AI Monitor is local-first by default.
+
+What AI Monitor stores locally:
+- Task status, task titles, short step messages, timestamps, and navigation actions.
+- Which tool reported the task (e.g. claude-code, chatgpt-web).
+- Local configuration and notification provider settings.
+- A local API token in ~/.ai-monitor/api-token with 0600 file permissions.
+
+What AI Monitor does not do by default:
+- It does not send prompts, AI replies, or workspace paths to external services.
+- It does not send screenshots.
+- It does not enable Slack, Telegram, Discord, Email, ntfy, Pushover, Bark, Feishu, WeCom, DingTalk, ServerChan, or webhook delivery by default.
+- It does not enable the Desktop app observer by default.
+
+Optional integrations:
+- Browser extension setup sends supported AI-tab status events to the local daemon at 127.0.0.1.
+- Terminal integrations send command and agent lifecycle status to the local daemon at 127.0.0.1.
+- Local notification permission is requested only when AI Monitor needs to show a local alert.
+- Desktop app observer is optional. If enabled, it uses macOS Accessibility permission to read lightweight desktop app window state for local task display.
+- Apple Events permission is used when you click a task and AI Monitor brings a browser or terminal window to the front.
+
+External notifications:
+- External notification providers are not configured or enabled by default.
+- Default notification rules send only to the local desktop provider.
+- When external providers are enabled, the default privacy settings redact external workspace paths, prompts, and replies.
+
+User controls:
+- Ignore rules in config/default.toml can drop matching events before storage or keep them local-only so they are not delivered externally.
+- Uninstalling the app does not automatically delete local history. Use the uninstall guide for full data cleanup.
