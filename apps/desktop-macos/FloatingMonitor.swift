@@ -3927,21 +3927,21 @@ private final class SettingsPanelController: NSObject {
         copySupportActions.orientation = .horizontal
         copySupportActions.spacing = 8
         let copyDiagnosticsButton = NSButton(title: "Copy diagnostics", target: self, action: #selector(copyDiagnostics))
-        let copySetupGuideButton = NSButton(title: "Copy setup guide", target: self, action: #selector(copySetupGuide))
-        let copyTroubleshootingButton = NSButton(title: "Copy troubleshooting guide", target: self, action: #selector(copyTroubleshootingGuide))
-        let copyLicenseButton = NSButton(title: "Copy license notices", target: self, action: #selector(copyLicenseNotices))
-        let copyPrivacyButton = NSButton(title: "Copy privacy notice", target: self, action: #selector(copyPrivacyNotice))
+        let openReadmeButton = NSButton(title: "README ↗", target: self, action: #selector(openReadmeOnGitHub))
+        let openTroubleshootingButton = NSButton(title: "Troubleshooting ↗", target: self, action: #selector(openTroubleshootingOnGitHub))
         copySupportActions.addArrangedSubview(copyDiagnosticsButton)
-        copySupportActions.addArrangedSubview(copySetupGuideButton)
-        copySupportActions.addArrangedSubview(copyTroubleshootingButton)
+        copySupportActions.addArrangedSubview(openReadmeButton)
+        copySupportActions.addArrangedSubview(openTroubleshootingButton)
         stack.addArrangedSubview(copySupportActions)
         let cleanupActions = NSStackView()
         cleanupActions.orientation = .horizontal
         cleanupActions.spacing = 8
-        let copyUninstallButton = NSButton(title: "Copy uninstall guide", target: self, action: #selector(copyUninstallGuide))
-        cleanupActions.addArrangedSubview(copyLicenseButton)
-        cleanupActions.addArrangedSubview(copyPrivacyButton)
-        cleanupActions.addArrangedSubview(copyUninstallButton)
+        let openPrivacyButton = NSButton(title: "Privacy ↗", target: self, action: #selector(openPrivacyOnGitHub))
+        let openUninstallButton = NSButton(title: "Uninstall guide ↗", target: self, action: #selector(openUninstallOnGitHub))
+        let openLicenseButton = NSButton(title: "License ↗", target: self, action: #selector(openLicenseOnGitHub))
+        cleanupActions.addArrangedSubview(openPrivacyButton)
+        cleanupActions.addArrangedSubview(openUninstallButton)
+        cleanupActions.addArrangedSubview(openLicenseButton)
         stack.addArrangedSubview(cleanupActions)
 
         stack.addArrangedSubview(settingsLabel("Notification Setup / 通知设置"))
@@ -4348,10 +4348,29 @@ private final class SettingsPanelController: NSObject {
         status.stringValue = "Copied diagnostics"
     }
 
-    @objc private func copySetupGuide() {
-        save()
-        copyToPasteboard(setupGuideText())
-        status.stringValue = "Copied setup guide"
+    @objc private func openReadmeOnGitHub() {
+        NSWorkspace.shared.open(URL(string: "https://github.com/notracc1210/ai-monitor-public#readme")!)
+        status.stringValue = "Opened README on GitHub"
+    }
+
+    @objc private func openTroubleshootingOnGitHub() {
+        NSWorkspace.shared.open(URL(string: "https://github.com/notracc1210/ai-monitor-public/blob/main/docs/troubleshooting.md")!)
+        status.stringValue = "Opened troubleshooting guide on GitHub"
+    }
+
+    @objc private func openLicenseOnGitHub() {
+        NSWorkspace.shared.open(URL(string: "https://github.com/notracc1210/ai-monitor-public/blob/main/LICENSE")!)
+        status.stringValue = "Opened license on GitHub"
+    }
+
+    @objc private func openPrivacyOnGitHub() {
+        NSWorkspace.shared.open(URL(string: "https://github.com/notracc1210/ai-monitor-public/blob/main/docs/privacy.md")!)
+        status.stringValue = "Opened privacy notice on GitHub"
+    }
+
+    @objc private func openUninstallOnGitHub() {
+        NSWorkspace.shared.open(URL(string: "https://github.com/notracc1210/ai-monitor-public/blob/main/docs/uninstall.md")!)
+        status.stringValue = "Opened uninstall guide on GitHub"
     }
 
     @objc private func copyBrowserExtensionInstallLink() {
@@ -4374,25 +4393,6 @@ private final class SettingsPanelController: NSObject {
         status.stringValue = "Opened browser install link"
     }
 
-    @objc private func copyTroubleshootingGuide() {
-        copyToPasteboard(bundledTroubleshootingGuideText())
-        status.stringValue = "Copied troubleshooting guide"
-    }
-
-    @objc private func copyLicenseNotices() {
-        copyToPasteboard(bundledLicenseNoticesText())
-        status.stringValue = "Copied license notices"
-    }
-
-    @objc private func copyPrivacyNotice() {
-        copyToPasteboard(bundledPrivacyNoticeText())
-        status.stringValue = "Copied privacy notice"
-    }
-
-    @objc private func copyUninstallGuide() {
-        copyToPasteboard(bundledUninstallGuideText())
-        status.stringValue = "Copied uninstall guide"
-    }
 
     @objc private func pasteProviderSecret() {
         pasteIntoProviderField(providerSecretField, statusLabel: "Secret")
