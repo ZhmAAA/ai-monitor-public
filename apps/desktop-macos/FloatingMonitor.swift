@@ -1713,8 +1713,9 @@ private func menuBarLogoImage() -> NSImage? {
           let image = NSImage(contentsOf: url) else {
         return nil
     }
-    image.size = NSSize(width: 40, height: 40)
-    image.isTemplate = false
+    let thickness = NSStatusBar.system.thickness
+    image.size = NSSize(width: thickness, height: thickness)
+    image.isTemplate = true
     return image
 }
 
@@ -5196,7 +5197,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
     }
 
     private func configureStatusItem() {
-        let item = NSStatusBar.system.statusItem(withLength: 28)
+        let item = NSStatusBar.system.statusItem(withLength: NSVariableStatusItemLength)
         if let button = item.button {
             button.image = menuBarLogoImage() ??
                 NSImage(systemSymbolName: "dot.radiowaves.left.and.right", accessibilityDescription: "AI Monitor")
