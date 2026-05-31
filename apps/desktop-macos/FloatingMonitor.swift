@@ -1713,7 +1713,7 @@ private func menuBarLogoImage() -> NSImage? {
           let image = NSImage(contentsOf: url) else {
         return nil
     }
-    image.size = NSSize(width: 32, height: 32)
+    image.size = NSSize(width: 40, height: 40)
     image.isTemplate = false
     return image
 }
