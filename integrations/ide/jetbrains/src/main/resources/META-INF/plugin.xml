@@ -1,0 +1,61 @@
+<idea-plugin>
+  <id>local.ai-monitor.jetbrains</id>
+  <name>AI Monitor</name>
+  <vendor>AI Monitor contributors</vendor>
+
+  <description>
+    Reports JetBrains IDE agent and task states to the local AI Monitor daemon.
+  </description>
+
+  <depends>com.intellij.modules.platform</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <applicationConfigurable
+      id="aiMonitorSettings"
+      displayName="AI Monitor"
+      instance="local.aimonitor.jetbrains.AiMonitorConfigurable" />
+    <projectListeners>
+      <listener
+        class="local.aimonitor.jetbrains.AiMonitorExecutionListener"
+        topic="com.intellij.execution.ExecutionListener" />
+    </projectListeners>
+  </extensions>
+
+  <actions>
+    <group id="AiMonitor.Actions" text="AI Monitor" popup="true">
+      <add-to-group group-id="ToolsMenu" anchor="last" />
+      <action
+        id="AiMonitor.ReportRunning"
+        class="local.aimonitor.jetbrains.ReportStateAction"
+        text="Report Running"
+        description="Report the current JetBrains IDE task as running">
+        <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift R" />
+      </action>
+      <action
+        id="AiMonitor.ReportWaiting"
+        class="local.aimonitor.jetbrains.ReportStateAction"
+        text="Report Waiting For Input"
+        description="Report the current JetBrains IDE task as waiting for input" />
+      <action
+        id="AiMonitor.ReportPendingChanges"
+        class="local.aimonitor.jetbrains.ReportStateAction"
+        text="Report Pending Changes"
+        description="Report pending changes or diff approval" />
+      <action
+        id="AiMonitor.ReportCompleted"
+        class="local.aimonitor.jetbrains.ReportStateAction"
+        text="Report Completed"
+        description="Report the current JetBrains IDE task as completed" />
+      <action
+        id="AiMonitor.ReportFailed"
+        class="local.aimonitor.jetbrains.ReportStateAction"
+        text="Report Failed"
+        description="Report the current JetBrains IDE task as failed" />
+      <action
+        id="AiMonitor.ClearTask"
+        class="local.aimonitor.jetbrains.ClearTaskAction"
+        text="Clear Current IDE Task"
+        description="Remove the current JetBrains IDE task from AI Monitor" />
+    </group>
+  </actions>
+</idea-plugin>

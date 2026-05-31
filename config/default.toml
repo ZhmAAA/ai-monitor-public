@@ -1,0 +1,56 @@
+[api]
+auth_enabled = true
+# Defaults to ~/.ai-monitor/api-token when omitted. The daemon creates that file
+# with 0600 permissions if it does not exist. Set token_file only if support asks
+# you to use a custom token file.
+cors_allowed_origins = [
+  "http://127.0.0.1:",
+  "http://localhost:",
+  "http://[::1]:",
+  "chrome-extension://",
+  "moz-extension://",
+  "safari-web-extension://",
+]
+
+[privacy]
+redact_external_workspace_paths = true
+redact_external_prompts = true
+redact_external_replies = true
+redact_storage_prompts = false
+redact_storage_replies = false
+
+[quiet_hours]
+enabled = false
+start = "22:00"
+end = "07:00"
+allow_priorities = ["P0"]
+
+[[providers]]
+id = "desktop"
+type = "desktop"
+enabled = true
+
+[[rules]]
+status = "needs_permission"
+priority = "P0"
+send_to = ["desktop"]
+
+[[rules]]
+status = "waiting_for_input"
+priority = "P0"
+send_to = ["desktop"]
+
+[[rules]]
+status = "failed"
+priority = "P0"
+send_to = ["desktop"]
+
+[[rules]]
+status = "idle_but_not_done"
+priority = "P0"
+send_to = ["desktop"]
+
+[[rules]]
+status = "completed"
+priority = "P1"
+send_to = ["desktop"]

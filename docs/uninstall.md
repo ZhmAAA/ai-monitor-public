@@ -1,23 +1,42 @@
 # Uninstall AI Monitor
 
-AI Monitor keeps local data outside the app bundle so ordinary app updates do not erase your history or settings.
+AI Monitor keeps user data outside the app bundle so ordinary app updates do not erase local history.
 
-## Remove The App
+## Remove the app
 
-1. Quit AI Monitor from the menu bar.
-2. Open Settings and choose `Remove login daemon` if you enabled startup.
+1. Quit AI Monitor from the menu bar item.
+2. Open AI Monitor settings and choose `Remove login daemon` if you enabled startup.
 3. Delete `/Applications/AI Monitor.app`.
 
-If you still have the DMG, you can read `UNINSTALL.txt` or run `UNINSTALL.command`. The command previews cleanup paths and asks for confirmation before deleting data.
+For an installed app without a source checkout, open Settings and choose `Copy uninstall guide` before deleting the app. The bundled guide includes the same local state paths and the current support guidance without requiring the DMG or repo. If the DMG is still available, double-click `UNINSTALL.command` to ask a running AI Monitor app to quit, preview the same cleanup, and type `DELETE` only when you intentionally want full removal.
 
-## Remove Local Data
+## Remove local data
 
-Delete these paths only if you want to remove AI Monitor history, settings, logs, and tokens:
+To remove all local state from a source checkout:
 
+```bash
+./scripts/uninstall_macos_app.sh --yes
+```
+
+The script removes:
+
+- `/Applications/AI Monitor.app`
+- `~/Library/LaunchAgents/<bundle-id>.daemon.plist` for public builds, or `~/Library/LaunchAgents/local.ai-monitor.daemon.plist` for local development builds
+- `~/Library/Preferences/<bundle-id>.plist`
 - `~/Library/Application Support/AI Monitor`
 - `~/.ai-monitor`
 - `~/Library/Logs/AI Monitor`
-- `~/Library/Preferences/<bundle-id>.plist`
-- `~/Library/LaunchAgents/<launch-agent-label>.plist`
 
-The exact bundle ID and launch agent label can vary by release channel. If you are unsure, use the uninstall guide bundled in the DMG or copy the uninstall guide from AI Monitor Settings before deleting the app.
+When removing a public build from a source checkout, the script reads the bundle identifier from `/Applications/AI Monitor.app` when it exists. If the app has already been deleted, set `AI_MONITOR_BUNDLE_ID` or `AI_MONITOR_LAUNCH_AGENT_LABEL` so the script targets the same preferences and login daemon label shown in `RELEASE_MANIFEST.json` and `Copy diagnostics`.
+
+Preview the cleanup first:
+
+```bash
+./scripts/uninstall_macos_app.sh --dry-run
+```
+
+Keep selected state when needed:
+
+```bash
+./scripts/uninstall_macos_app.sh --yes --keep-data --keep-token --keep-logs --keep-preferences
+```

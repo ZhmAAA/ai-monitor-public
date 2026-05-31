@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Monitor</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <strong>AI Monitor</strong>
+        <span id="status" aria-live="polite">Checking</span>
+      </header>
+
+      <label>
+        Daemon URL
+        <input id="daemonUrl" type="url" spellcheck="false" placeholder="http://127.0.0.1:4318" />
+      </label>
+
+      <label>
+        API Token
+        <input id="apiToken" type="password" spellcheck="false" autocomplete="off" placeholder="Paste from AI Monitor Settings" />
+      </label>
+      <p class="hint">In AI Monitor Settings, click Copy API token, paste it here, then Test.</p>
+
+      <label>
+        Workspace
+        <input id="workspace" type="text" spellcheck="false" placeholder="browser" />
+      </label>
+
+      <div class="actions">
+        <button id="save" type="button">Save</button>
+        <button id="test" type="button">Test</button>
+        <button id="clearToken" type="button">Clear Token</button>
+      </div>
+
+      <p id="lastDelivery"></p>
+      <p id="helpText" class="hint">Open AI Monitor from Applications before testing this extension.</p>
+      <button id="openSettings" class="secondary-action" type="button">Open AI Monitor Settings</button>
+      <p id="version"></p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

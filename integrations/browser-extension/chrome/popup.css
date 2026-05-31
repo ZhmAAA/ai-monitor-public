@@ -1,0 +1,99 @@
+:root {
+  color-scheme: light dark;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  width: 340px;
+  background: Canvas;
+  color: CanvasText;
+}
+
+main {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+strong {
+  font-size: 14px;
+}
+
+#status {
+  color: #2563eb;
+  font-size: 12px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+}
+
+input {
+  border: 1px solid color-mix(in srgb, CanvasText 20%, transparent);
+  border-radius: 6px;
+  box-sizing: border-box;
+  font: inherit;
+  padding: 8px;
+  width: 100%;
+}
+
+input::placeholder {
+  color: color-mix(in srgb, CanvasText 45%, transparent);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  flex: 1;
+  font: inherit;
+  padding: 8px 12px;
+}
+
+#save {
+  background: #2563eb;
+  color: white;
+}
+
+#test,
+#clearToken {
+  background: color-mix(in srgb, CanvasText 12%, transparent);
+  color: CanvasText;
+}
+
+.secondary-action {
+  background: color-mix(in srgb, CanvasText 12%, transparent);
+  color: CanvasText;
+  width: 100%;
+}
+
+#lastDelivery,
+.hint,
+#version {
+  color: color-mix(in srgb, CanvasText 70%, transparent);
+  font-size: 12px;
+  margin: 0;
+}
+
+#lastDelivery,
+#version {
+  min-height: 16px;
+}
+
+.hint {
+  line-height: 1.35;
+}

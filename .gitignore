@@ -1,2 +1,9 @@
+target/
+.claude/
+.codex/
+*.db
+*.db-shm
+*.db-wal
 .DS_Store
-Thumbs.db
+.env
+.env.*

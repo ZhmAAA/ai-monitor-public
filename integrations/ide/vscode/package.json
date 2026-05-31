@@ -1,0 +1,111 @@
+{
+  "name": "ai-monitor-vscode",
+  "displayName": "AI Monitor",
+  "description": "Reports VS Code and Cursor agent/task states to the local AI Monitor daemon.",
+  "version": "0.1.1",
+  "publisher": "ai-monitor",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.86.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:aiMonitor.sendTestEvent",
+    "onCommand:aiMonitor.openDesktopSettings",
+    "onCommand:aiMonitor.reportRunning",
+    "onCommand:aiMonitor.reportWaitingForInput",
+    "onCommand:aiMonitor.reportPendingChanges",
+    "onCommand:aiMonitor.reportTestsRunning",
+    "onCommand:aiMonitor.reportTestsFailed",
+    "onCommand:aiMonitor.reportPrCreated",
+    "onCommand:aiMonitor.reportCompleted",
+    "onCommand:aiMonitor.reportFailed",
+    "onCommand:aiMonitor.clearTask"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "AI Monitor",
+      "properties": {
+        "aiMonitor.daemonUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:4318",
+          "description": "AI Monitor daemon base URL."
+        },
+        "aiMonitor.apiToken": {
+          "type": "string",
+          "default": "",
+          "description": "AI Monitor API token. If empty, the extension reads ~/.ai-monitor/api-token."
+        },
+        "aiMonitor.workspace": {
+          "type": "string",
+          "default": "",
+          "description": "Workspace path override. If empty, the first workspace folder path is used."
+        },
+        "aiMonitor.source": {
+          "type": "string",
+          "enum": [
+            "vscode",
+            "cursor"
+          ],
+          "default": "vscode",
+          "description": "IDE source name reported to AI Monitor."
+        },
+        "aiMonitor.autoReportTasks": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically report VS Code task starts and exits."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "aiMonitor.sendTestEvent",
+        "title": "AI Monitor: Send Test Event"
+      },
+      {
+        "command": "aiMonitor.openDesktopSettings",
+        "title": "AI Monitor: Open Desktop Settings"
+      },
+      {
+        "command": "aiMonitor.reportRunning",
+        "title": "AI Monitor: Report Running"
+      },
+      {
+        "command": "aiMonitor.reportWaitingForInput",
+        "title": "AI Monitor: Report Waiting For Input"
+      },
+      {
+        "command": "aiMonitor.reportPendingChanges",
+        "title": "AI Monitor: Report Pending Changes"
+      },
+      {
+        "command": "aiMonitor.reportTestsRunning",
+        "title": "AI Monitor: Report Tests Running"
+      },
+      {
+        "command": "aiMonitor.reportTestsFailed",
+        "title": "AI Monitor: Report Tests Failed"
+      },
+      {
+        "command": "aiMonitor.reportPrCreated",
+        "title": "AI Monitor: Report PR Created"
+      },
+      {
+        "command": "aiMonitor.reportCompleted",
+        "title": "AI Monitor: Report Completed"
+      },
+      {
+        "command": "aiMonitor.reportFailed",
+        "title": "AI Monitor: Report Failed"
+      },
+      {
+        "command": "aiMonitor.clearTask",
+        "title": "AI Monitor: Clear Current IDE Task"
+      }
+    ]
+  }
+}

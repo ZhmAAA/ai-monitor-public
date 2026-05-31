@@ -1,0 +1,42 @@
+# macOS public release environment template.
+#
+# Prefer using scripts/init_macos_release_env.sh to create .env.release.local.
+# If you copy this file manually, replace every placeholder with the real
+# publisher values, then source that local file before running the release
+# scripts:
+#
+#   cp docs/macos-release-env.example .env.release.local
+#   ${EDITOR:-vi} .env.release.local
+#   set -a
+#   . ./.env.release.local
+#   set +a
+#   ./scripts/release_macos_app.sh --check-only
+#
+# Do not commit real Developer ID, notary, store, or managed-extension values.
+
+export AI_MONITOR_BUNDLE_ID="com.yourcompany.aimonitor"
+export AI_MONITOR_APP_VERSION="0.1.0"
+export AI_MONITOR_APP_BUILD="1"
+export AI_MONITOR_MACOS_MIN_VERSION="13.0"
+export AI_MONITOR_MACOS_ARCHS="arm64 x86_64"
+export AI_MONITOR_COPYRIGHT="Copyright 2026 Your Company, Inc."
+export AI_MONITOR_BROWSER_EXTENSION_INSTALL_URL="https://chromewebstore.google.com/detail/your-ai-monitor-extension-id"
+export AI_MONITOR_BROWSER_EXTENSION_PRIVACY_POLICY_URL="https://yourcompany.example/privacy/ai-monitor-browser-adapter"
+export AI_MONITOR_CODESIGN_IDENTITY="Developer ID Application: Your Company, Inc. (TEAMID1234)"
+
+# Preferred: store credentials once with:
+#   xcrun notarytool store-credentials ai-monitor-notary \
+#     --apple-id you@example.com \
+#     --team-id TEAMID1234 \
+#     --password app-specific-password
+export AI_MONITOR_NOTARY_PROFILE="ai-monitor-notary"
+
+# Alternative for CI systems that cannot use a local notary keychain profile.
+# Leave these commented in committed files and provide them through the CI secret
+# store or a private ignored environment file.
+# export AI_MONITOR_NOTARY_APPLE_ID="you@example.com"
+# export AI_MONITOR_NOTARY_PASSWORD="app-specific-password"
+# export AI_MONITOR_NOTARY_TEAM_ID="TEAMID1234"
+
+export AI_MONITOR_RELEASE=1
+export AI_MONITOR_CHECK_NOTARY_ONLINE=1

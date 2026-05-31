@@ -1,0 +1,72 @@
+{
+  "manifest_version": 3,
+  "name": "AI Monitor Browser Adapter",
+  "description": "Reports AI web task state to the local AI Monitor daemon.",
+  "version": "0.1.23",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    },
+    "default_popup": "popup.html",
+    "default_title": "AI Monitor"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://www.perplexity.ai/*",
+        "https://perplexity.ai/*",
+        "https://grok.com/*",
+        "https://www.grok.com/*",
+        "https://github.com/*",
+        "https://x.com/grok*",
+        "https://x.com/i/grok*",
+        "https://www.x.com/grok*",
+        "https://www.x.com/i/grok*",
+        "https://twitter.com/grok*",
+        "https://twitter.com/i/grok*",
+        "https://www.twitter.com/grok*",
+        "https://www.twitter.com/i/grok*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*",
+    "https://chatgpt.com/*",
+    "https://chat.openai.com/*",
+    "https://claude.ai/*",
+    "https://gemini.google.com/*",
+    "https://www.perplexity.ai/*",
+    "https://perplexity.ai/*",
+    "https://grok.com/*",
+    "https://www.grok.com/*",
+    "https://github.com/*",
+    "https://x.com/grok*",
+    "https://x.com/i/grok*",
+    "https://www.x.com/grok*",
+    "https://www.x.com/i/grok*",
+    "https://twitter.com/grok*",
+    "https://twitter.com/i/grok*",
+    "https://www.twitter.com/grok*",
+    "https://www.twitter.com/i/grok*"
+  ],
+  "permissions": ["storage", "tabs", "alarms", "scripting"]
+}

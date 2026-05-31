@@ -1,0 +1,21 @@
+AI Monitor uninstall guide
+
+Standard uninstall:
+1. Quit AI Monitor from the menu bar.
+2. Open AI Monitor Settings and click Remove login daemon if you enabled startup.
+3. Delete /Applications/AI Monitor.app.
+
+Remove local data:
+Deleting the app does not automatically delete local history, config, tokens, or logs. Remove these paths only if you want a full cleanup:
+
+- ~/Library/Application Support/AI Monitor
+- ~/.ai-monitor
+- ~/Library/Logs/AI Monitor
+- ~/Library/Preferences/<bundle-id>.plist
+- ~/Library/LaunchAgents/<launch-agent-label>.plist
+
+Packaged builds replace <bundle-id> and <launch-agent-label> with the exact values for that build.
+
+If the DMG is still available, you can double-click UNINSTALL.command to ask a running AI Monitor app to quit and preview these cleanup paths. It removes files only after you type DELETE in Terminal.
+
+Use Settings -> Copy diagnostics before uninstalling if support needs the exact bundle_identifier, launch_agent_label, or local state paths. Diagnostics do not include provider secrets or the API token.

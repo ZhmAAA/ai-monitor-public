@@ -1,0 +1,76 @@
+AI Monitor troubleshooting guide
+
+Use this when AI Monitor opens but does not show tasks, or when an integration cannot connect.
+
+First-run setup:
+- If Settings did not open automatically, open AI Monitor from the menu bar and choose Settings.
+- Click Copy setup guide for the current first-run checklist.
+- Keep daemon URL at http://127.0.0.1:4318 unless support asks you to change it.
+
+Daemon offline:
+1. Open Settings and click Test connection.
+2. If it reports offline, click Start daemon and test again.
+3. If it still reports offline, click Open logs and check daemon.err.log.
+4. If Start daemon or login daemon install says to move the app, drag AI Monitor.app into Applications, eject the DMG, reopen it from Applications, and test again.
+5. If integrations should keep working after AI Monitor quits or after login, click Install login daemon.
+
+Token or HTTP 401 errors:
+1. Open Settings.
+2. Click Copy API token. If the token file does not exist yet, Settings creates it before copying.
+3. Paste the token into the browser extension popup or IDE setting.
+4. Click Save, then Test.
+5. From the browser extension popup, Open AI Monitor Settings should open the same Settings panel through ai-monitor://settings.
+
+The default token file is ~/.ai-monitor/api-token. AI Monitor writes it with 0600 permissions. The login daemon references that file with --api-token-file; the token should not be written into a LaunchAgent plist.
+
+Browser extension does not report tabs:
+- Confirm the extension popup says the daemon is online.
+- Confirm the API token was saved in the popup.
+- Click Open AI Monitor Settings in the extension popup if you need to return to the desktop settings page.
+- In AI Monitor Settings, click Open browser install link, or click Copy browser install link and confirm the extension came from that URL.
+- Reload the AI web page after installing or updating the extension.
+- Supported web pages include ChatGPT, Claude, Gemini, Perplexity, Grok, and GitHub pages with explicit coding-agent signals.
+- Public users should install the Chrome Web Store or managed extension. Developer Mode is for internal testing.
+
+Terminal tasks do not appear:
+1. Confirm Node.js is installed.
+2. Unzip AI Monitor Terminal Integrations.zip if your release channel provides it.
+3. Double-click Install AI Monitor Terminal Integrations.command from the unzipped folder, or run ./integrations/terminal/install-terminal-integrations.command --project /path/to/repo for scripted installs.
+4. If the command says Node.js is missing, install Node.js and rerun it.
+5. In Codex CLI, open /hooks and trust the AI Monitor hooks.
+6. Run Test connection in Settings before debugging hooks.
+
+IDE tasks do not appear:
+1. In VS Code or Cursor, run AI Monitor: Send Test Event from the command palette.
+2. If delivery fails, run AI Monitor: Open Desktop Settings, click Test connection, then retry the test event.
+3. If the warning mentions HTTP 401, click Copy API token in Settings or paste the copied token into AI Monitor: Api Token.
+4. Cursor users should set AI Monitor: Source to cursor.
+
+Clicking a task does not focus the app:
+- The first time AI Monitor returns to a browser or terminal window, macOS may ask whether AI Monitor can control that app. Choose Allow.
+- If you previously denied the prompt, open System Settings -> Privacy & Security -> Automation, then allow AI Monitor to control the relevant browser or terminal app.
+- AI Monitor uses this permission only to activate existing browser or terminal windows for click-to-return actions.
+
+Desktop app observer does not show tasks:
+- The Desktop app observer is off by default because it uses macOS Accessibility APIs to read desktop app window state.
+- Open Settings, enable Desktop app observer, then click Request Accessibility.
+- In System Settings -> Privacy & Security -> Accessibility, allow AI Monitor. Reopen AI Monitor if macOS asks you to.
+- Copy diagnostics includes accessibility_trusted so support can tell whether this permission is active.
+
+Notifications do not appear:
+- AI Monitor asks for macOS notification permission only when Local clickable notifications is enabled and it first needs to show a local alert.
+- If notifications do not appear after you denied the prompt, open System Settings -> Notifications and allow AI Monitor.
+- Third-party providers are disabled by default. Configure provider credentials, save them, restart the daemon, then click Refresh health.
+
+Support diagnostics:
+- Click Copy diagnostics before asking for support.
+- The copied text excludes the API token and provider secrets.
+- It includes app version, bundle identifier, minimum macOS version, current macOS version, app location, source toggles, provider IDs, browser install-link configured state, login daemon label, login daemon loaded/running state, token-file existence, and token-file permissions.
+- Use Copy license notices for bundled license and dependency notices.
+- Use Copy privacy notice for the packaged privacy summary.
+- Use Copy uninstall guide for cleanup steps after deleting the app.
+
+Clean reinstall:
+- Deleting the app does not automatically delete local history, config, tokens, or logs.
+- Use Copy uninstall guide, or keep UNINSTALL.txt from the DMG, before removing local data.
+- If the DMG is still available, UNINSTALL.command previews cleanup paths and removes files only after you type DELETE.
