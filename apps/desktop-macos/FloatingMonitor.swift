@@ -3774,6 +3774,8 @@ private final class SettingsPanelController: NSObject {
     private var providerExtraSettingRow: NSView?
     private var providerConfigs: [ProviderConfigEntry] = []
     private let newProviderSelection = "__new_provider__"
+    private var isDetailed: Bool = false
+    private weak var settingsScrollView: NSScrollView?
 
     init(onSave: @escaping () -> Void) {
         self.onSave = onSave
@@ -3806,6 +3808,26 @@ private final class SettingsPanelController: NSObject {
         panel.center()
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        DispatchQueue.main.async { [weak self] in
+            self?.settingsScrollView?.documentView?.scroll(.zero)
+        }
+    }
+
+    private func s(_ zh: String, _ en: String) -> String {
+        appSettings.settingsLanguage == "en" ? en : zh
+    }
+
+    private func rebuildPanel() {
+        panel.contentView = buildView()
+        loadValues()
+        DispatchQueue.main.async { [weak self] in
+            self?.settingsScrollView?.documentView?.scroll(.zero)
+        }
+    }
+
+    @objc private func toggleDetailedMode() {
+        isDetailed.toggle()
+        rebuildPanel()
     }
 
     private func installKeyDownMonitor() {
@@ -3874,80 +3896,93 @@ private final class SettingsPanelController: NSObject {
         stack.spacing = 12
         stack.edgeInsets = NSEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
 
-        stack.addArrangedSubview(settingsLabel("General / 通用"))
-        stack.addArrangedSubview(labeledControl("Language / 语言", languagePopup))
+        // Top bar: language + mode toggle
+        let topBar = NSStackView()
+        topBar.orientation = .horizontal
+        topBar.spacing = 16
+        topBar.alignment = .centerY
+        let modeButton = NSButton(
+            title: isDetailed ? s("简洁模式", "Simple") : s("详细设置 ↓", "Detailed ↓"),
+            target: self, action: #selector(toggleDetailedMode)
+        )
+        topBar.addArrangedSubview(labeledControl(s("语言", "Language"), languagePopup))
+        topBar.addArrangedSubview(modeButton)
+        stack.addArrangedSubview(topBar)
 
+        // Daemon
         stack.addArrangedSubview(settingsLabel("Daemon"))
-        stack.addArrangedSubview(labeledControl("URL", daemonURLField))
-        stack.addArrangedSubview(labeledControl("Config", configPathField))
-        stack.addArrangedSubview(labeledControl("API token", apiTokenField))
+        if isDetailed {
+            stack.addArrangedSubview(labeledControl("URL", daemonURLField))
+            stack.addArrangedSubview(labeledControl(s("配置文件", "Config"), configPathField))
+        }
+        stack.addArrangedSubview(labeledControl("API Token", apiTokenField))
 
         let daemonActions = NSStackView()
         daemonActions.orientation = .horizontal
         daemonActions.spacing = 8
-        let saveButton = NSButton(title: "Save", target: self, action: #selector(save))
-        let startButton = NSButton(title: "Start daemon", target: self, action: #selector(startDaemon))
-        let testConnectionButton = NSButton(title: "Test connection", target: self, action: #selector(testDaemonConnection))
-        let copyTokenButton = NSButton(title: "Copy API token", target: self, action: #selector(copyAPIToken))
+        let saveButton = NSButton(title: s("保存", "Save"), target: self, action: #selector(save))
+        let testButton = NSButton(title: s("测试连接", "Test"), target: self, action: #selector(testDaemonConnection))
+        let startButton = NSButton(title: s("启动 daemon", "Start daemon"), target: self, action: #selector(startDaemon))
+        let copyTokenButton = NSButton(title: s("复制 Token", "Copy token"), target: self, action: #selector(copyAPIToken))
         daemonActions.addArrangedSubview(saveButton)
+        daemonActions.addArrangedSubview(testButton)
         daemonActions.addArrangedSubview(startButton)
-        daemonActions.addArrangedSubview(testConnectionButton)
         daemonActions.addArrangedSubview(copyTokenButton)
         stack.addArrangedSubview(daemonActions)
 
-        let browserActions = NSStackView()
-        browserActions.orientation = .horizontal
-        browserActions.spacing = 8
-        let openBrowserExtensionInstallLinkButton = NSButton(title: "Open browser install link", target: self, action: #selector(openBrowserExtensionInstallLink))
-        let copyBrowserExtensionInstallLinkButton = NSButton(title: "Copy browser install link", target: self, action: #selector(copyBrowserExtensionInstallLink))
-        browserActions.addArrangedSubview(openBrowserExtensionInstallLinkButton)
-        browserActions.addArrangedSubview(copyBrowserExtensionInstallLinkButton)
-        stack.addArrangedSubview(browserActions)
+        if isDetailed {
+            let browserActions = NSStackView()
+            browserActions.orientation = .horizontal
+            browserActions.spacing = 8
+            let openBrowserButton = NSButton(title: s("打开浏览器安装链接", "Open browser install link"), target: self, action: #selector(openBrowserExtensionInstallLink))
+            let copyBrowserButton = NSButton(title: s("复制安装链接", "Copy browser install link"), target: self, action: #selector(copyBrowserExtensionInstallLink))
+            browserActions.addArrangedSubview(openBrowserButton)
+            browserActions.addArrangedSubview(copyBrowserButton)
+            stack.addArrangedSubview(browserActions)
 
-        let launchAgentActions = NSStackView()
-        launchAgentActions.orientation = .horizontal
-        launchAgentActions.spacing = 8
-        let installLaunchAgentButton = NSButton(title: "Install login daemon", target: self, action: #selector(installDaemonLaunchAgent))
-        let removeLaunchAgentButton = NSButton(title: "Remove login daemon", target: self, action: #selector(removeDaemonLaunchAgent))
-        let statusLaunchAgentButton = NSButton(title: "Daemon login status", target: self, action: #selector(showDaemonLaunchAgentStatus))
-        launchAgentActions.addArrangedSubview(installLaunchAgentButton)
-        launchAgentActions.addArrangedSubview(removeLaunchAgentButton)
-        launchAgentActions.addArrangedSubview(statusLaunchAgentButton)
-        stack.addArrangedSubview(launchAgentActions)
+            let launchAgentActions = NSStackView()
+            launchAgentActions.orientation = .horizontal
+            launchAgentActions.spacing = 8
+            let installLaunchAgentButton = NSButton(title: s("安装登录 daemon", "Install login daemon"), target: self, action: #selector(installDaemonLaunchAgent))
+            let removeLaunchAgentButton = NSButton(title: s("移除登录 daemon", "Remove login daemon"), target: self, action: #selector(removeDaemonLaunchAgent))
+            let statusLaunchAgentButton = NSButton(title: s("daemon 登录状态", "Daemon status"), target: self, action: #selector(showDaemonLaunchAgentStatus))
+            launchAgentActions.addArrangedSubview(installLaunchAgentButton)
+            launchAgentActions.addArrangedSubview(removeLaunchAgentButton)
+            launchAgentActions.addArrangedSubview(statusLaunchAgentButton)
+            stack.addArrangedSubview(launchAgentActions)
 
-        let supportActions = NSStackView()
-        supportActions.orientation = .horizontal
-        supportActions.spacing = 8
-        let openLogsButton = NSButton(title: "Open logs", target: self, action: #selector(openLogsFolder))
-        let openDataButton = NSButton(title: "Open data folder", target: self, action: #selector(openDataFolder))
-        supportActions.addArrangedSubview(openLogsButton)
-        supportActions.addArrangedSubview(openDataButton)
-        stack.addArrangedSubview(supportActions)
-        let copySupportActions = NSStackView()
-        copySupportActions.orientation = .horizontal
-        copySupportActions.spacing = 8
-        let copyDiagnosticsButton = NSButton(title: "Copy diagnostics", target: self, action: #selector(copyDiagnostics))
-        let openReadmeButton = NSButton(title: "README ↗", target: self, action: #selector(openReadmeOnGitHub))
-        let openTroubleshootingButton = NSButton(title: "Troubleshooting ↗", target: self, action: #selector(openTroubleshootingOnGitHub))
-        copySupportActions.addArrangedSubview(copyDiagnosticsButton)
-        copySupportActions.addArrangedSubview(openReadmeButton)
-        copySupportActions.addArrangedSubview(openTroubleshootingButton)
-        stack.addArrangedSubview(copySupportActions)
-        let cleanupActions = NSStackView()
-        cleanupActions.orientation = .horizontal
-        cleanupActions.spacing = 8
-        let openPrivacyButton = NSButton(title: "Privacy ↗", target: self, action: #selector(openPrivacyOnGitHub))
-        let openUninstallButton = NSButton(title: "Uninstall guide ↗", target: self, action: #selector(openUninstallOnGitHub))
-        let openLicenseButton = NSButton(title: "License ↗", target: self, action: #selector(openLicenseOnGitHub))
-        cleanupActions.addArrangedSubview(openPrivacyButton)
-        cleanupActions.addArrangedSubview(openUninstallButton)
-        cleanupActions.addArrangedSubview(openLicenseButton)
-        stack.addArrangedSubview(cleanupActions)
+            let fileActions = NSStackView()
+            fileActions.orientation = .horizontal
+            fileActions.spacing = 8
+            let openLogsButton = NSButton(title: s("打开日志", "Open logs"), target: self, action: #selector(openLogsFolder))
+            let openDataButton = NSButton(title: s("打开数据目录", "Open data folder"), target: self, action: #selector(openDataFolder))
+            let copyDiagnosticsButton = NSButton(title: s("复制诊断信息", "Copy diagnostics"), target: self, action: #selector(copyDiagnostics))
+            fileActions.addArrangedSubview(openLogsButton)
+            fileActions.addArrangedSubview(openDataButton)
+            fileActions.addArrangedSubview(copyDiagnosticsButton)
+            stack.addArrangedSubview(fileActions)
 
-        stack.addArrangedSubview(settingsLabel("Notification Setup / 通知设置"))
-        stack.addArrangedSubview(labeledControl("Provider list", providerPresetPopup))
-        stack.addArrangedSubview(labeledControl("Type", providerTypePopup))
-        stack.addArrangedSubview(labeledControl("Provider ID", providerIdField))
+            let linksActions = NSStackView()
+            linksActions.orientation = .horizontal
+            linksActions.spacing = 8
+            let openReadmeButton = NSButton(title: "README ↗", target: self, action: #selector(openReadmeOnGitHub))
+            let openTroubleshootingButton = NSButton(title: s("排障 ↗", "Troubleshooting ↗"), target: self, action: #selector(openTroubleshootingOnGitHub))
+            let openPrivacyButton = NSButton(title: s("隐私 ↗", "Privacy ↗"), target: self, action: #selector(openPrivacyOnGitHub))
+            let openUninstallButton = NSButton(title: s("卸载 ↗", "Uninstall ↗"), target: self, action: #selector(openUninstallOnGitHub))
+            let openLicenseButton = NSButton(title: s("许可证 ↗", "License ↗"), target: self, action: #selector(openLicenseOnGitHub))
+            linksActions.addArrangedSubview(openReadmeButton)
+            linksActions.addArrangedSubview(openTroubleshootingButton)
+            linksActions.addArrangedSubview(openPrivacyButton)
+            linksActions.addArrangedSubview(openUninstallButton)
+            linksActions.addArrangedSubview(openLicenseButton)
+            stack.addArrangedSubview(linksActions)
+        }
+
+        // Notifications
+        stack.addArrangedSubview(settingsLabel(s("通知设置", "Notifications")))
+        stack.addArrangedSubview(labeledControl(s("渠道", "Provider"), providerPresetPopup))
+        stack.addArrangedSubview(labeledControl(s("类型", "Type"), providerTypePopup))
+        stack.addArrangedSubview(labeledControl("ID", providerIdField))
         providerGuide.font = .systemFont(ofSize: 11)
         providerGuide.textColor = .secondaryLabelColor
         providerGuide.lineBreakMode = .byWordWrapping
@@ -3956,8 +3991,7 @@ private final class SettingsPanelController: NSObject {
         providerGuide.widthAnchor.constraint(greaterThanOrEqualToConstant: 460).isActive = true
         stack.addArrangedSubview(providerGuide)
 
-        stack.addArrangedSubview(settingsLabel("Provider Credentials"))
-        stack.addArrangedSubview(labeledControl("Secret", providerSecretField))
+        stack.addArrangedSubview(labeledControl(s("密钥", "Secret"), providerSecretField))
         providerExtraSettingRow = labeledControl(providerExtraSettingLabel, providerExtraSettingField)
         if let providerExtraSettingRow {
             stack.addArrangedSubview(providerExtraSettingRow)
@@ -3965,52 +3999,57 @@ private final class SettingsPanelController: NSObject {
         let secretActions = NSStackView()
         secretActions.orientation = .horizontal
         secretActions.spacing = 8
-        let pasteSecretButton = NSButton(title: "Paste secret", target: self, action: #selector(pasteProviderSecret))
-        let saveSecretButton = NSButton(title: "Save provider", target: self, action: #selector(saveProviderSecret))
+        let pasteSecretButton = NSButton(title: s("粘贴密钥", "Paste secret"), target: self, action: #selector(pasteProviderSecret))
+        let saveSecretButton = NSButton(title: s("保存渠道", "Save provider"), target: self, action: #selector(saveProviderSecret))
         secretActions.addArrangedSubview(pasteSecretButton)
         secretActions.addArrangedSubview(saveSecretButton)
         stack.addArrangedSubview(secretActions)
 
-        stack.addArrangedSubview(settingsLabel("Provider Health"))
-        let refreshHealthButton = NSButton(title: "Refresh health", target: self, action: #selector(refreshProviderHealth))
+        // Provider health inline (right after save)
+        let refreshHealthButton = NSButton(title: s("刷新连接状态", "Refresh health"), target: self, action: #selector(refreshProviderHealth))
         stack.addArrangedSubview(refreshHealthButton)
         providerHealthStack.orientation = .vertical
         providerHealthStack.alignment = .leading
         providerHealthStack.spacing = 8
         stack.addArrangedSubview(providerHealthStack)
 
-        stack.addArrangedSubview(settingsLabel("Observe Sources"))
-        for checkbox in [browserCheckbox, terminalCheckbox, ideCheckbox, desktopCheckbox, notificationsCheckbox] {
-            checkbox.target = self
-            checkbox.action = #selector(save)
-            stack.addArrangedSubview(checkbox)
+        // Observe sources (detailed only)
+        if isDetailed {
+            stack.addArrangedSubview(settingsLabel(s("观察来源", "Observe Sources")))
+            for checkbox in [browserCheckbox, terminalCheckbox, ideCheckbox, desktopCheckbox, notificationsCheckbox] {
+                checkbox.target = self
+                checkbox.action = #selector(save)
+                stack.addArrangedSubview(checkbox)
+            }
+            let accessibilityActions = NSStackView()
+            accessibilityActions.orientation = .horizontal
+            accessibilityActions.spacing = 8
+            accessibilityStatus.textColor = .secondaryLabelColor
+            let requestAccessibilityButton = NSButton(title: s("申请 Accessibility 权限", "Request Accessibility"), target: self, action: #selector(requestAccessibilityAccess))
+            accessibilityActions.addArrangedSubview(requestAccessibilityButton)
+            accessibilityActions.addArrangedSubview(accessibilityStatus)
+            stack.addArrangedSubview(accessibilityActions)
         }
-        let accessibilityActions = NSStackView()
-        accessibilityActions.orientation = .horizontal
-        accessibilityActions.spacing = 8
-        accessibilityStatus.textColor = .secondaryLabelColor
-        let requestAccessibilityButton = NSButton(title: "Request Accessibility", target: self, action: #selector(requestAccessibilityAccess))
-        accessibilityActions.addArrangedSubview(requestAccessibilityButton)
-        accessibilityActions.addArrangedSubview(accessibilityStatus)
-        stack.addArrangedSubview(accessibilityActions)
 
-        stack.addArrangedSubview(settingsLabel("Daemon Ignore Rule"))
+        // Ignore rules
+        stack.addArrangedSubview(settingsLabel(s("忽略规则", "Ignore Rules")))
+        ignoreRuleMode.removeAllItems()
         ignoreRuleMode.addItems(withTitles: ["ignore", "local_only"])
-        stack.addArrangedSubview(labeledControl("Rule id", ignoreRuleIdField))
-        stack.addArrangedSubview(labeledControl("Mode", ignoreRuleMode))
-        stack.addArrangedSubview(labeledControl("App", ignoreRuleAppField))
-        stack.addArrangedSubview(labeledControl("Source", ignoreRuleSourceField))
-        stack.addArrangedSubview(labeledControl("Site", ignoreRuleSiteField))
-        stack.addArrangedSubview(labeledControl("Workspace", ignoreRuleWorkspacePrefixField))
-        stack.addArrangedSubview(labeledControl("Contains", ignoreRuleWorkspaceContainsField))
+        stack.addArrangedSubview(labeledControl(s("规则 ID", "Rule ID"), ignoreRuleIdField))
+        stack.addArrangedSubview(labeledControl(s("模式", "Mode"), ignoreRuleMode))
+        stack.addArrangedSubview(labeledControl(s("应用", "App"), ignoreRuleAppField))
+        stack.addArrangedSubview(labeledControl(s("来源", "Source"), ignoreRuleSourceField))
+        stack.addArrangedSubview(labeledControl(s("站点", "Site"), ignoreRuleSiteField))
+        stack.addArrangedSubview(labeledControl(s("工作区前缀", "Workspace"), ignoreRuleWorkspacePrefixField))
+        stack.addArrangedSubview(labeledControl(s("工作区包含", "Contains"), ignoreRuleWorkspaceContainsField))
         let ignoreActions = NSStackView()
         ignoreActions.orientation = .horizontal
         ignoreActions.spacing = 8
-        let saveIgnoreRuleButton = NSButton(title: "Save daemon ignore rule", target: self, action: #selector(saveDaemonIgnoreRule))
+        let saveIgnoreRuleButton = NSButton(title: s("保存忽略规则", "Save ignore rule"), target: self, action: #selector(saveDaemonIgnoreRule))
         ignoreActions.addArrangedSubview(saveIgnoreRuleButton)
         stack.addArrangedSubview(ignoreActions)
 
-        stack.addArrangedSubview(settingsLabel("Ignored Workspaces"))
+        stack.addArrangedSubview(settingsLabel(s("已忽略的工作区", "Ignored Workspaces")))
         ignoredWorkspaces.font = .monospacedSystemFont(ofSize: 11, weight: .regular)
         ignoredWorkspaces.string = appSettings.ignoredWorkspacePrefixesText
         let ignoredScroll = NSScrollView()
@@ -4027,7 +4066,9 @@ private final class SettingsPanelController: NSObject {
         status.textColor = .secondaryLabelColor
         stack.addArrangedSubview(status)
 
-        return scrollableDetailContent(stack)
+        let scrollView = scrollableDetailContent(stack)
+        settingsScrollView = scrollView as? NSScrollView
+        return scrollView
     }
 
     private func configureLanguagePopup() {
@@ -4192,8 +4233,7 @@ private final class SettingsPanelController: NSObject {
 
     @objc private func languageChanged() {
         appSettings.settingsLanguage = languagePopup.indexOfSelectedItem == 1 ? "en" : "zh"
-        updateProviderGuide()
-        status.stringValue = appSettings.settingsLanguage == "en" ? "Language saved" : "语言已保存"
+        rebuildPanel()
     }
 
     @objc private func providerPresetChanged() {
