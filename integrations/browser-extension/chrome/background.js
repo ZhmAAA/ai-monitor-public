@@ -34,6 +34,9 @@ chrome.runtime.onInstalled.addListener(async () => {
     apiToken: existing.apiToken || "",
     workspace: existing.workspace || DEFAULT_WORKSPACE,
   });
+  if (!existing.apiToken) {
+    setDeliveryBadge("needs-token");
+  }
   ensureTabPresenceAlarm();
   scanAiTabs().catch(() => {});
   reconcileTrackedTabs().catch(() => {});
@@ -446,10 +449,32 @@ async function deliverAgentEvent(daemonUrl, event) {
 
   if (!response.ok) {
     const text = await response.text();
+    const errorMessage = `Daemon returned ${response.status}${response.status === 401 ? " — paste API token in the extension popup" : ""}`;
+    setDeliveryBadge(response.status === 401 ? "needs-token" : "error");
+    await chrome.storage.local.set({
+      lastDelivery: {
+        ok: false,
+        daemonUrl,
+        error: errorMessage,
+        updatedAt: new Date().toISOString(),
+      },
+    });
     throw new Error(`AI Monitor daemon returned ${response.status}: ${text}`);
   }
 
+  setDeliveryBadge("ok");
   return response.json();
+}
+
+function setDeliveryBadge(state) {
+  if (state === "ok") {
+    chrome.action.setBadgeText({ text: "" });
+    return;
+  }
+  chrome.action.setBadgeText({ text: "!" });
+  chrome.action.setBadgeBackgroundColor({
+    color: state === "needs-token" ? "#e07000" : "#cc3333",
+  });
 }
 
 async function readSettings() {

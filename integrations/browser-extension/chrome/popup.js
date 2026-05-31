@@ -34,6 +34,8 @@ async function save() {
     workspace: settings.workspace,
   });
   if (settings.apiToken) {
+    // Clear the error badge now that the user has set a token.
+    chrome.action.setBadgeText({ text: "" });
     setStatus("Saved", "Settings saved. Click Test to send a sample browser event.");
   } else {
     setStatus("Needs token", "Copy API token in AI Monitor Settings, paste it here, then click Test.");
@@ -122,6 +124,12 @@ function renderLastDelivery(delivery) {
     lastDelivery.textContent = "";
     return;
   }
+  if (delivery.ok === false) {
+    lastDelivery.textContent = `⚠ ${delivery.error || "Delivery failed"} · ${delivery.updatedAt || ""}`;
+    lastDelivery.style.color = "#cc3333";
+    return;
+  }
+  lastDelivery.style.color = "";
   const debug = delivery.debug ? ` · ${delivery.debug}` : "";
   const adapter = delivery.adapterVersion ? ` · v${delivery.adapterVersion}` : "";
   lastDelivery.textContent = `${delivery.status} · ${delivery.sessionName}${debug}${adapter} · ${delivery.updatedAt}`;
