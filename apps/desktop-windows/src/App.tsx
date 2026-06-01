@@ -132,11 +132,13 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("Ready");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [autoStartAttempted, setAutoStartAttempted] = useState(false);
 
   const normalizedUrl = useMemo(() => normalizeDaemonUrl(daemonUrl), [daemonUrl]);
+  const tauriRuntime = isTauriRuntime();
 
   const refreshStatus = useCallback(async () => {
-    if (!isTauriRuntime()) {
+    if (!tauriRuntime) {
       return;
     }
     try {
@@ -149,7 +151,7 @@ export default function App() {
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to read app status");
     }
-  }, []);
+  }, [tauriRuntime]);
 
   const refreshTasks = useCallback(async () => {
     try {
@@ -178,7 +180,7 @@ export default function App() {
   }, [apiToken]);
 
   useEffect(() => {
-    if (!isTauriRuntime() || apiToken.trim()) {
+    if (!tauriRuntime || apiToken.trim()) {
       return;
     }
     readApiToken()
@@ -186,7 +188,37 @@ export default function App() {
         if (token) setApiToken(token);
       })
       .catch(() => undefined);
-  }, [apiToken]);
+  }, [apiToken, tauriRuntime]);
+
+  useEffect(() => {
+    if (!tauriRuntime || httpOnline || status?.online || busy || autoStartAttempted) {
+      return;
+    }
+
+    setAutoStartAttempted(true);
+    startManagedDaemon()
+      .then(async (nextStatus) => {
+        setStatus(nextStatus);
+        const token = await readApiToken();
+        if (token) setApiToken(token);
+        setMessage(nextStatus.message);
+        window.setTimeout(() => {
+          refreshTasks();
+          refreshStatus();
+        }, 700);
+      })
+      .catch((error) => {
+        setMessage(error instanceof Error ? error.message : "Unable to start daemon");
+      });
+  }, [
+    autoStartAttempted,
+    busy,
+    httpOnline,
+    refreshStatus,
+    refreshTasks,
+    status?.online,
+    tauriRuntime,
+  ]);
 
   useEffect(() => {
     refreshStatus();
@@ -299,7 +331,7 @@ export default function App() {
 
   async function handleOpen(action: TaskAction | null) {
     if (!action?.target) return;
-    if (isTauriRuntime()) {
+    if (tauriRuntime) {
       await openTarget(action.target);
       return;
     }
@@ -317,7 +349,7 @@ export default function App() {
 
   async function handleCopyToken() {
     let token = apiToken;
-    if (!token && isTauriRuntime()) {
+    if (!token && tauriRuntime) {
       token = (await readApiToken()) ?? "";
       setApiToken(token);
     }
@@ -400,7 +432,7 @@ export default function App() {
             <button className="icon-button" onClick={refreshTasks} title="Refresh">
               <RefreshCw size={17} />
             </button>
-            {isTauriRuntime() ? (
+            {tauriRuntime ? (
               online && status?.managed ? (
                 <button className="icon-button" onClick={handleStopDaemon} title="Stop daemon">
                   <Power size={17} />

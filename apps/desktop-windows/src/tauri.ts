@@ -3,11 +3,18 @@ import type { AppPaths, DaemonStatus } from "./types";
 declare global {
   interface Window {
     __TAURI_INTERNALS__?: unknown;
+    __TAURI__?: unknown;
   }
 }
 
 export function isTauriRuntime() {
-  return typeof window !== "undefined" && Boolean(window.__TAURI_INTERNALS__);
+  if (typeof window === "undefined") return false;
+  return (
+    Boolean(window.__TAURI_INTERNALS__) ||
+    Boolean(window.__TAURI__) ||
+    window.location.hostname === "tauri.localhost" ||
+    window.location.protocol === "tauri:"
+  );
 }
 
 async function invokeCommand<T>(command: string, args?: Record<string, unknown>) {
