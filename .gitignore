@@ -1,4 +1,6 @@
 target/
+node_modules/
+dist/
 .claude/
 .codex/
 *.db
@@ -7,3 +9,5 @@ target/
 .DS_Store
 .env
 .env.*
+apps/desktop-windows/src-tauri/resources/ai-monitor-daemon.exe
+apps/desktop-windows/src-tauri/gen/

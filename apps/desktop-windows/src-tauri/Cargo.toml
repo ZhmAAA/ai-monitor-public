@@ -1,0 +1,18 @@
+[package]
+name = "ai-monitor-windows"
+version = "0.1.0"
+description = "Windows desktop shell for AI Monitor"
+authors = ["AI Monitor contributors"]
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/notracc1210/ai-monitor-public"
+
+[workspace]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+open = "5"
+serde = { version = "1", features = ["derive"] }
+tauri = { version = "2", features = [] }
